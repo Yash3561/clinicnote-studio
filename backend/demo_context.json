@@ -1,0 +1,31 @@
+{
+  "visit-avery": [
+    {
+      "id": "ctx-a1",
+      "date": "2026-10-02",
+      "kind": "Visit note",
+      "title": "Prior primary-care encounter",
+      "source": "Synthetic primary-care record",
+      "status": "Historical",
+      "text": "The sample record states that sleep and energy were discussed. No diagnosis is inferred from this record."
+    },
+    {
+      "id": "ctx-a2",
+      "date": "2026-11-01",
+      "kind": "Patient report",
+      "title": "Medication history awaiting confirmation",
+      "source": "Synthetic member intake",
+      "status": "Unverified",
+      "text": "This historical entry needs confirmation and is not copied into today\u2019s plan."
+    },
+    {
+      "id": "ctx-a3",
+      "date": "2026-11-10",
+      "kind": "Document",
+      "title": "Prior results document listed",
+      "source": "Synthetic document index",
+      "status": "Metadata only",
+      "text": "No numeric result or clinical interpretation is supplied."
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+export const runtime={connected:false,health:null};
+export async function api(path,options={}){const r=await fetch(path,{credentials:'same-origin',...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});const d=await r.json();if(!r.ok)throw new Error(typeof d.detail==='string'?d.detail:'Local service rejected the operation');return d;}
+export function saveBody(e){return {expected_revision:e.recordRevision??null,patient:e.patient,reason:e.reason,visitType:e.visitType,time:e.time,date:e.date,transcript:e.transcript,template:e.template,edits:Object.fromEntries((e.draft?.sections||[]).flatMap(s=>s.items).filter(i=>i.origin==='manual').map(i=>[i.id,i.text]))};}
+export async function syncEncounter(e){const result=await api('/api/encounters/'+encodeURIComponent(e.id),{method:'POST',body:JSON.stringify(saveBody(e))});Object.assign(e,result);return e;}

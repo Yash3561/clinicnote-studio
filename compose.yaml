@@ -1,0 +1,16 @@
+# Development only; model service has no published port.
+services:
+  app:
+    build: .
+    ports: ["127.0.0.1:8784:8784"]
+    environment:
+      CLINIC_OLLAMA_URL: http://models:11434
+      CLINIC_WHISPER_MODEL: small.en
+    volumes: ["clinic-work:/app/work"]
+    depends_on: [models]
+  models:
+    image: ollama/ollama:0.40.3
+    volumes: ["model-work:/root/.ollama"]
+volumes:
+  clinic-work:
+  model-work:

@@ -1,0 +1,9 @@
+# Verification — November 15, 2026
+
+Twelve pure-core checks pass with `node --test tests/core.test.mjs`. They exercise patient report versus clinician assessment, preserving uncertainty, blocking unresolved source markers, resolving source issues, source and template staleness, reviewer-edit invalidation, role restrictions, empty note rejection, version increment, export labeling, and treating script-like text as data. JS syntax checks pass. These are small deterministic software checks, not model/clinical validation or a security audit.
+
+Browser workflow observed: source-link selection; explicit approval checkbox; approved export screen; edit clears approval in header and blocks export; Riley's clarification blocks approval; correcting source produces a reviewable draft; changing approved source yields Needs refresh and blocks export. Created a new synthetic encounter, drafted, approved and downloaded its structured JSON; read-back confirms source spans, synthetic marker, exact reviewer and local-only integration status. Reload retained browser-local approval. Placement preview and exit worked. Reset restored the three fixtures.
+
+390×844 phone request produced an observed 354px client/scroll width with no horizontal overflow in the IAB surface. Evidence selection and review were visually inspected. Draft textarea autosizing was checked: all tested visible heights equaled scroll heights, so note text was not clipped. Viewport override reset after QA.
+
+Local recording was implemented using browser getUserMedia/MediaRecorder with permission, stop/cleanup, local URL playback, file-size/MIME guards and unavailable/denied handling. Microphone and actual audio capture were not exercised in QA. No live STT/LLM/EHR exists or was tested. No real personal/patient data was used. The generated test download was a synthetic file.
