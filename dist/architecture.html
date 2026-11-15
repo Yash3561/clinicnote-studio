@@ -128,11 +128,13 @@
       <div class="actual-model"><strong>Actual local tables now:</strong> <code>encounters</code>, <code>jobs</code>, <code>events</code>, <code>context_records</code>, <code>source_versions</code>. No canonical patient table or full note-version table yet.</div>
     </section>
 
-    <section class="section last-section" aria-labelledby="talk-title">
-      <div class="section-head"><p class="eyebrow">06 / USE THIS IN A CONVERSATION</p><h2 id="talk-title">A clean way to explain your choices.</h2></div>
-      <div class="talk-grid">
-        <blockquote>“I started with a deterministic, source-linked draft because fluent language is not enough for a clinical note. Every statement should be traceable, uncertain parts should stay visible, and approval should apply only to the version the clinician reviewed.”</blockquote>
-        <div><h3>If the engineer asks about scale</h3><p>“This uses SQLite and a local worker for a laptop prototype. For shared use, I would measure the workload, move transactional data to a managed relational database, use durable queues for longer jobs, and scale the API and inference workers separately. That is a plan, not a benchmarked claim.”</p><h3>If the data scientist asks how to improve it</h3><p>“First label the failures clinicians rejected. Then compare a source-preserving baseline and candidate models on held-out examples. Measure unsupported statements, omissions, attribution, reviewer effort, latency, and cost. A new model is useful only if it improves the agreed workflow.”</p></div>
+    <section class="section last-section" aria-labelledby="principles-title">
+      <div class="section-head"><p class="eyebrow">06 / ENGINEERING PRINCIPLES</p><h2 id="principles-title">Design around evidence and explicit state.</h2></div>
+      <div class="principles-grid">
+        <article><span>01</span><h3>Source attribution</h3><p>Preserve the distinction between the source, the draft, and reviewer-entered changes.</p></article>
+        <article><span>02</span><h3>Versioned approval</h3><p>Approval is bound to the exact transcript and note revision that was reviewed.</p></article>
+        <article><span>03</span><h3>Graceful uncertainty</h3><p>Keep unclear content visible for review; do not fill missing sections with model guesses.</p></article>
+        <article><span>04</span><h3>Scoped integration</h3><p>Authorize each workspace read or write, then confirm the destination's actual result.</p></article>
       </div>
       <div class="footer-note"><span>ClinicNote Studio · fictional demo data</span><a href="./index.html">Return to encounter workspace ↑</a></div>
     </section>
