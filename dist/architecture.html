@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f5">
+  <meta name="description" content="Visual tour of ClinicNote Studio: the current prototype, note workflow, and a proposed production architecture.">
+  <title>Architecture map — ClinicNote Studio</title>
+  <link rel="stylesheet" href="architecture.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to architecture</a>
+  <header class="masthead">
+    <a class="brand" href="./index.html"><span class="brand-mark">C</span><span>ClinicNote <small>STUDIO</small></span></a>
+    <a class="back-link" href="./index.html">← Back to the demo</a>
+  </header>
+  <main id="main">
+    <section class="hero">
+      <p class="eyebrow">SYSTEM MAP · PROTOTYPE + PROPOSED DESIGN</p>
+      <h1>From a visit conversation<br>to a reviewed note.</h1>
+      <p class="lede">A visual guide for clinicians, product teams, data scientists, and engineers. Green labels describe what runs in the prototype today. Amber labels describe a possible production direction that still needs agreement and implementation.</p>
+      <div class="legend"><span><i class="dot live"></i> Working prototype</span><span><i class="dot plan"></i> Proposed / not built</span><span><i class="dot human"></i> Human decision</span></div>
+    </section>
+
+    <section class="section" aria-labelledby="simple-title">
+      <div class="section-head"><p class="eyebrow">01 / PLAIN-LANGUAGE FLOW</p><h2 id="simple-title">What happens during one visit?</h2><p>The system prepares and organizes paperwork. A clinician checks the source, corrects the draft, and decides what to approve.</p></div>
+      <ol class="flow simple-flow">
+        <li><b>01</b><strong>Capture</strong><span>Audio or transcript from one fictional visit.</span></li>
+        <li><b>02</b><strong>Confirm</strong><span>Correct words and identify who said them.</span></li>
+        <li><b>03</b><strong>Organize</strong><span>Prepare a note using statements from the source.</span></li>
+        <li><b>04</b><strong>Trace</strong><span>Open the original wording behind each draft item.</span></li>
+        <li class="human-step"><b>05</b><strong>Review</strong><span>Clinician edits, clarifies, and approves one exact version.</span></li>
+        <li><b>06</b><strong>Hand off</strong><span>Today: local copy or download. No EHR write-back.</span></li>
+      </ol>
+      <p class="callout"><strong>Safety boundary:</strong> a correct copy of a mistaken transcript can still be wrong. Speaker identity, transcript quality, and clinical meaning need human review.</p>
+    </section>
+
+    <section class="section" aria-labelledby="today-title">
+      <div class="section-head"><p class="eyebrow">02 / WHAT RUNS TODAY</p><h2 id="today-title">Two demo modes, two storage locations.</h2><p>The phone-accessible hosted demo is deliberately separate from the connected laptop backend.</p></div>
+      <div class="mode-grid">
+        <article class="mode-card live-card">
+          <div class="card-kicker"><i class="dot live"></i> PRIVATE HOSTED DEMO</div>
+          <h3>Browser-only walkthrough</h3>
+          <div class="node-flow vertical-flow">
+            <div class="node"><strong>Browser interface</strong><small>Static page · fictional examples</small></div>
+            <span class="connector">↓</span>
+            <div class="node"><strong>Browser storage</strong><small>This browser only · not shared</small></div>
+            <span class="connector">↓</span>
+            <div class="node"><strong>Draft and review rules</strong><small>Deterministic · no laptop/model API</small></div>
+          </div>
+        </article>
+        <article class="mode-card live-card">
+          <div class="card-kicker"><i class="dot live"></i> CONNECTED LAPTOP DEMO</div>
+          <h3>Local API and model path</h3>
+          <div class="node-flow vertical-flow">
+            <div class="node"><strong>Browser interface</strong><small>Fictional encounters · local session</small></div>
+            <span class="connector">↓ request</span>
+            <div class="node"><strong>FastAPI + role/version checks</strong><small>Bound to the laptop loopback address</small></div>
+            <span class="connector">↓</span>
+            <div class="node-row">
+              <div class="node"><strong>SQLite</strong><small>Local records and jobs</small></div>
+              <div class="node"><strong>Job worker</strong><small>Lease · retry · cancel</small></div>
+            </div>
+            <span class="connector">↓ local processing</span>
+            <div class="node-row">
+              <div class="node"><strong>faster-whisper</strong><small>Transcript · speakers Unknown</small></div>
+              <div class="node optional"><strong>Optional Qwen</strong><small>Exact-source copy check</small></div>
+            </div>
+            <span class="connector">↓</span>
+            <div class="node"><strong>Deterministic note + review gate</strong><small>Source links · flags · version-bound approval</small></div>
+          </div>
+        </article>
+      </div>
+      <div class="not-connected"><strong>Not connected today</strong><span>Clinic/EHR · cloud database · cloud model · patient identity provider · outbound alerts</span></div>
+    </section>
+
+    <section class="section" aria-labelledby="guardrail-title">
+      <div class="section-head"><p class="eyebrow">03 / NOTE PIPELINE</p><h2 id="guardrail-title">Source first. Human approval at the end.</h2><p>Each boundary has a clear input and output. When evidence is unclear, the right action is to ask for clarification or leave the section undocumented.</p></div>
+      <div class="pipeline" role="list" aria-label="Current audio-to-note workflow">
+        <article class="pipe-step"><span>INPUT</span><h3>Visit audio</h3><p>Temporary demo recording or supplied transcript.</p></article>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <article class="pipe-step"><span>TRANSCRIPTION</span><h3>Timestamped words</h3><p>Speech model labels speakers Unknown.</p></article>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <article class="pipe-step"><span>HUMAN CHECK</span><h3>Confirmed source</h3><p>Correct recognition and speaker attribution.</p></article>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <article class="pipe-step"><span>DRAFT</span><h3>Source-linked note</h3><p>Deterministic sections; unsupported text is not filled in.</p></article>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <article class="pipe-step human-step"><span>REVIEW</span><h3>Approved version</h3><p>Clinician reviews exact source and draft revision.</p></article>
+        <div class="pipe-arrow" aria-hidden="true">→</div>
+        <article class="pipe-step"><span>HANDOFF</span><h3>Copy / download</h3><p>Local only. EHR integration is not implemented.</p></article>
+      </div>
+      <details class="detail-note"><summary>What changes if someone edits the source?</summary><p>The source receives a new version. A draft based on an older version becomes stale, and its approval cannot authorize the changed content. The clinician reviews the current version again.</p></details>
+    </section>
+
+    <section class="section planned-section" aria-labelledby="future-title">
+      <div class="section-head"><p class="eyebrow">04 / POSSIBLE PRODUCTION DESIGN</p><h2 id="future-title">How it could fit a clinic workspace.</h2><p>This is a design proposal, not a deployed architecture. The clinic's identity system, EHR, data policies, cloud, and evaluation targets have not been selected.</p></div>
+      <div class="target-map">
+        <div class="target-lane">
+          <div class="lane-label">PEOPLE + WORKSPACE</div>
+          <div class="target-node"><strong>Clinician / staff</strong><small>Reviews and owns decisions</small></div><span class="connector">↕</span><div class="target-node"><strong>Clinic EHR</strong><small>Verified patient and visit context</small></div>
+        </div>
+        <div class="target-lane">
+          <div class="lane-label">APP BOUNDARY</div>
+          <div class="target-row"><div class="target-node"><strong>Clinic sign-in</strong><small>Role + access policy</small></div><span class="connector">→</span><div class="target-node"><strong>Application API</strong><small>Versioned request contract</small></div><span class="connector">→</span><div class="target-node"><strong>Workspace adapter</strong><small>Scoped EHR read/write</small></div></div>
+          <div class="target-row"><div class="target-node emphasis"><strong>Review state machine</strong><small>Exact-version approval required</small></div></div>
+        </div>
+        <div class="target-lane">
+          <div class="lane-label">BACKGROUND PROCESSING</div>
+          <div class="target-row"><div class="target-node"><strong>Durable queue</strong><small>Idempotency · retry limits</small></div><span class="connector">→</span><div class="target-node"><strong>Bounded worker</strong><small>Timeout · cancel · backpressure</small></div><span class="connector">→</span><div class="target-node"><strong>Speech + note pipeline</strong><small>Source spans · validators</small></div></div>
+          <div class="target-row"><div class="target-node"><strong>Approved model path</strong><small>Private inference or governed API</small></div><span class="connector">→</span><div class="target-node emphasis"><strong>Human review queue</strong><small>Flags and draft for clinician</small></div></div>
+        </div>
+        <div class="target-lane data-lane">
+          <div class="lane-label">PROTECTED DATA SERVICES</div>
+          <div class="target-row"><div class="target-node data-node"><strong>PostgreSQL</strong><small>Patients · visits · note versions</small></div><div class="target-node data-node"><strong>Private object storage</strong><small>Encrypted audio, only if retained</small></div><div class="target-node data-node"><strong>Audit events</strong><small>Actor · action · time · outcome</small></div></div>
+          <p>History retrieval must verify patient identity, user access, purpose, and the date/source of each fact before it can enter a new draft.</p>
+        </div>
+      </div>
+      <p class="callout amber-callout"><strong>Integration rule:</strong> a mock connector or successful network response is not proof that a note reached the chart. The adapter must confirm the destination's actual write result and handle conflicts or uncertain outcomes.</p>
+    </section>
+
+    <section class="section" aria-labelledby="data-title">
+      <div class="section-head"><p class="eyebrow">05 / DATA MODEL</p><h2 id="data-title">Keep the visit and its evidence linked.</h2><p>Today’s SQLite schema is smaller. The map below is a proposed relational design for verified longitudinal records.</p></div>
+      <div class="data-map" role="img" aria-label="Proposed relationships: one clinic has many patients; a patient has many encounters; an encounter has source versions, note versions, and tasks; a note version links to evidence and a review decision.">
+        <div class="entity"><b>Clinic</b><span>organization boundary</span></div><div class="relation">1 → many</div><div class="entity"><b>Patient</b><span>verified stable identity</span></div><div class="relation">1 → many</div><div class="entity"><b>Encounter</b><span>one dated visit</span></div>
+        <div class="branch"><span>1 → many</span><div class="entity"><b>Source version</b><span>immutable transcript/audio ref</span></div><span>supports</span><div class="entity"><b>Evidence link</b><span>source span</span></div><span>cited by</span><div class="entity"><b>Note version</b><span>reviewable draft revision</span></div><span>1 → many</span><div class="entity"><b>Review decision</b><span>who approved which version</span></div></div>
+        <div class="side-entities"><div class="entity"><b>Task</b><span>administrative follow-through</span></div><div class="entity"><b>Audit event</b><span>who did what and when</span></div></div>
+      </div>
+      <div class="actual-model"><strong>Actual local tables now:</strong> <code>encounters</code>, <code>jobs</code>, <code>events</code>, <code>context_records</code>, <code>source_versions</code>. No canonical patient table or full note-version table yet.</div>
+    </section>
+
+    <section class="section last-section" aria-labelledby="talk-title">
+      <div class="section-head"><p class="eyebrow">06 / USE THIS IN A CONVERSATION</p><h2 id="talk-title">A clean way to explain your choices.</h2></div>
+      <div class="talk-grid">
+        <blockquote>“I started with a deterministic, source-linked draft because fluent language is not enough for a clinical note. Every statement should be traceable, uncertain parts should stay visible, and approval should apply only to the version the clinician reviewed.”</blockquote>
+        <div><h3>If the engineer asks about scale</h3><p>“This uses SQLite and a local worker for a laptop prototype. For shared use, I would measure the workload, move transactional data to a managed relational database, use durable queues for longer jobs, and scale the API and inference workers separately. That is a plan, not a benchmarked claim.”</p><h3>If the data scientist asks how to improve it</h3><p>“First label the failures clinicians rejected. Then compare a source-preserving baseline and candidate models on held-out examples. Measure unsupported statements, omissions, attribution, reviewer effort, latency, and cost. A new model is useful only if it improves the agreed workflow.”</p></div>
+      </div>
+      <div class="footer-note"><span>ClinicNote Studio · fictional demo data</span><a href="./index.html">Return to encounter workspace ↑</a></div>
+    </section>
+  </main>
+</body>
+</html>
